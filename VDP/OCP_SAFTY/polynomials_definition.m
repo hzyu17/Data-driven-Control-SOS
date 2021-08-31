@@ -2,7 +2,7 @@ function polynomials_definition(dynamics_option)
 % generating polynomials
 
 % VDP L1
-total_deg = 22;
+total_deg = 9;
 pvar x1 x2
 var_poly.x = [x1; x2];
 var_poly.x1 = x1;
@@ -38,10 +38,10 @@ end
 max_degc = max(deg_c);
 deg_w = max_degc*2 - deg_a;
 % VDP L1
-% Alph = 4; 
+Alph = 4; 
 
 % VDP L2
-Alph = 2;
+% Alph = 2;
 
 % define for ax cx wx
 Qa = nchoosek(deg_a+nx, nx);
@@ -117,10 +117,18 @@ end
 
 %%
 c_bc_sym = [];
+c_bc = [];
 for i_c = 1:dim_m
-    c_bc_sym = [c_bc_sym; getSymCoeffs(poly_bc_sym(i_c), var_sym.x, Psi)];
+    c_bc_i = getSymCoeffs(poly_bc_sym(i_c), var_sym.x, Psi);
+    c_bc = [c_bc; c_bc_i];
+    c_bc_sym_i = p2s(c_bc_i);
+    c_bc_sym = [c_bc_sym, c_bc_sym_i];
 end
-c_ab_sym = getSymCoeffs(poly_ab_sym, var_sym.x, Psi);
+
+c_ab = getSymCoeffs(poly_ab_sym, var_sym.x, Psi);
+c_ab_sym = p2s(c_ab);
+% poly_ab = poly_a * poly_b;
+% c_ab = poly2basis(poly_ab, Psi);
 
 assume(c_a_sym, 'real');
 for i_c = 1:dim_m

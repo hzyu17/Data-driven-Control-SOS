@@ -64,16 +64,26 @@ clc
 %%
 % poly_flg = 0; %polynomial or rational
 dynamics_option = 'vdp';
-% availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
-polynomials_definition(dynamics_option);
+data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
+data_driven_option.approx = 'gEDMD';
+%% polynomial definitions
+polynomials_definition(dynamics_option); % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
+
+%% gEDMD
+if strcmp(data_driven_option.type, 'data_driven')
+    gEDMD_filename = sampling_gEDMD(data_driven_option);
+else
+    gEDMD_filename = '';
+end
 
 %% solve ocp
 % for lamda = 1e5 % corresponding to van der pol dynamics
-lambda = 0; % 2-dim integrator
+% lambda = 50; % 2-dim integrator
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
-for lambda = [10, 20, 30, 40, 50] % L2 vdp
-    sos_prog_file = create_sosprog('L2');
-    ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file);
+for lambda = [10, 20, 30, 40, 50] % L1 vdp data-driven
+% for lambda = [10, 20, 30, 40, 50] % L2 vdp
+    sos_prog_file = create_sosprog('L1');
+    ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, data_driven_option, gEDMD_filename);
 
     % plotting ocp results
     % ocp_data_file_name = 'experiments/07_02_00_03_optimal_control_results_SOS_Rational_lbd_50000.mat';

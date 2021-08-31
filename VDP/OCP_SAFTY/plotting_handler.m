@@ -66,7 +66,7 @@ for i_xinit = 1:num_xinit
     % ----------------------------------------
     % 2. solving ODE using ux = cx / ax
     % ----------------------------------------
-    tspan = [0 40];
+    tspan = [0 30];
     for l1 = 1:length(xinits)
         xinit = xinits(l1, :);
         [tcont{l1}, ycont{l1}] = ode15s(@(t,pt) control_dynamics_defn(dynamics_option, pt, var_poly.x, cx_sol, ax_sol), tspan, xinit');
@@ -81,6 +81,10 @@ for i_xinit = 1:num_xinit
     end
     ocp_plot_elements.trajectory.tcont{i_xinit} = tcont;
     ocp_plot_elements.trajectory.ycont{i_xinit} = ycont;
+end
+
+if strcmp(data_approx_option.type, 'data_driven') %data driven need local controller
+    
 end
 
 %%

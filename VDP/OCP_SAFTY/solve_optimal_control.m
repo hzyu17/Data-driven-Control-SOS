@@ -1,4 +1,4 @@
-function [data_file_name] = solve_optimal_control(lambda, sos_prog_file)
+function [data_file_name] = solve_optimal_control(lambda, sos_prog_file, data_approx_option, gEDMD_file)
 %% preparations
 disp('------ Loading predefined sos program -------')
 sos_prog_file
@@ -49,12 +49,67 @@ if exist('dynamics_sym')==0
     dynamics_sym = dynamics_definition('sym', dynamics_option);
 end
 
-term(1) = vec_div(dynamics_sym.F.*poly_a_sym, var_sym.x);
-term(2) = vec_div(dynamics_sym.G*poly_c_sym, var_sym.x);
-term(3) = vec_div(dynamics_sym.F.*poly_ab_sym, var_sym.x);
-term(4) = vec_div(dynamics_sym.G*poly_bc_sym, var_sym.x);
+if strcmp(data_approx_option.type, 'data_driven')
+    if strcmp(data_approx_option.approx, 'gEDMD')
+    %     load('gEDMD_res.mat')
+%         load('sampling_data/gEDMD_res_01_15_21_01_27_58.mat') %bx = LQR
+        load(gEDMD_file)
+    else
+        load('sampling_data/sampling_data.mat')
+        load('sampling_data/EDMD_res.mat')
+    end
+%     pvar x1 x2
+%     x = [x1;x2];
+    Div_F = 0; Div_G = 0;
+    F = c_x'*L{1}*Psi;
+    if strcmp(data_approx_option.approx, 'gEDMD')
+        G = c_x'*(L{2}-L{1})*Psi;
+    else %EDMD
+        G = c_x'*L{2}*Psi;
+    end
 
-constraint_sym = (1+Alph).*poly_b_sym.*sum(term(1:2)) - Alph.*sum(term(3:4));
+    for i1 = 1 : nx
+        Div_Fi = diff(F(i1), var_poly.x(i1));
+        Div_F = Div_F + Div_Fi;
+        Div_Gi = diff(G(i1), var_poly.x(i1));
+        Div_G = Div_G + Div_Gi;
+    end
+
+    Div_F.coefficient(find(abs(Div_F.coefficient) <= 1e-9)) = 0;
+    Div_G.coefficient(find(abs(Div_G.coefficient) <= 1e-9)) = 0;
+
+    % term1
+    term(1) = c_a'*L{1}*Psi + c_a'*Psi*Div_F;
+    % term2, term4
+    if strcmp(data_approx_option.approx, 'gEDMD')
+        if length(c_c) == 1
+            c_c = c_c{1};
+        end
+        term(2) = c_c'*(L{2}-L{1})*Psi + c_c'*Psi*Div_G;
+        term(4) = c_bc'*(L{2}-L{1})*Psi + c_bc'*Psi*Div_G;
+    else %EDMD
+        term(2) = c_c'*L{2}*Psi + c_c'*Psi*Div_G;
+        term(4) = c_bc'*L{2}*Psi + c_bc'*Psi*Div_G;
+    end
+    % term3
+    term(3) = c_ab'*L{1}*Psi + c_ab'*Psi*Div_F;
+    % -------------------------------------
+    % polynomial representation
+    % -------------------------------------
+%     poly_a_sym = p2s(poly_a);
+%     poly_b_sym = p2s(poly_b);
+%     poly_c_sym = p2s(poly_c);
+    constraint_poly = (1+Alph).*poly_b*sum(term(1:2)) - Alph.*sum(term(3:4));
+    constraint_poly.coefficient(find(abs(constraint_poly.coefficient)<=1e-3)) = 0;
+    constraint_sym = p2s(constraint_poly);
+    
+elseif strcmp(data_approx_option.type, 'model_based')
+    term(1) = vec_div(dynamics_sym.F.*poly_a_sym, var_sym.x);
+    term(2) = vec_div(dynamics_sym.G*poly_c_sym, var_sym.x);
+    term(3) = vec_div(dynamics_sym.F.*poly_ab_sym, var_sym.x);
+    term(4) = vec_div(dynamics_sym.G*poly_bc_sym, var_sym.x);
+    constraint_sym = (1+Alph).*poly_b_sym.*sum(term(1:2)) - Alph.*sum(term(3:4));
+end
 
 % vdp
 % constraint_sym = clean_polynomial(constraint_sym, trunc_decim);
