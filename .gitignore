@@ -3,3 +3,4 @@ tools/*
 res/*
 experiments/*
 VDP/OCP_SAFTY/sos_program_data/*
+VDP/OCP_SAFTY_Koopman/sos_program_data/*
