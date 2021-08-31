@@ -1,0 +1,5 @@
+external/*
+tools/*
+res/*
+experiments/*
+VDP/OCP_SAFTY/sos_program_data/*

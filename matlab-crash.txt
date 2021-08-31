@@ -1,0 +1,131 @@
+MATLAB crash file:C:\Users\lucas\AppData\Local\Temp\matlab_crash_dump.8616-1:
+
+
+--------------------------------------------------------------------------------
+          Access violation detected at Thu Jan 14 10:27:22 2021 -0500
+--------------------------------------------------------------------------------
+
+Configuration:
+  Crash Decoding           : Disabled - No sandbox or build area path
+  Crash Mode               : continue (default)
+  Default Encoding         : windows-1252
+  Deployed                 : false
+  Graphics Driver          : Unknown hardware 
+  Graphics card 1          : Not Started Intel Corporation ( 0x8086 ) Intel(R) UHD Graphics 630 Version 27.20.100.8935 (2020-10-28)
+  Graphics card 2          : NVIDIA ( 0x10de ) NVIDIA Quadro RTX 3000 Version 27.21.14.5256 (2020-10-19)
+  Java Version             : Java 1.8.0_144-b01 with Oracle Corporation Java HotSpot(TM) 64-Bit Server VM mixed mode
+  MATLAB Architecture      : win64
+  MATLAB Entitlement ID    : 6257193
+  MATLAB Root              : C:\Program Files\MATLAB\R2018a
+  MATLAB Version           : 9.4.0.813654 (R2018a)
+  OpenGL                   : hardware
+  Operating System         : Microsoft Windows 10 Pro
+  Process ID               : 8616
+  Processor ID             : x86 Family 6 Model 158 Stepping 13, GenuineIntel
+  Session Key              : 2d8a5bbf-b784-49cd-b7e0-4b80b98dd33e
+  Window System            : Version 10.0 (Build 18363)
+
+Fault Count: 1
+
+
+Abnormal termination
+
+Register State (from fault):
+  RAX = 000000000000000b  RBX = 00000000498f9d40
+  RCX = 00000000498ed640  RDX = ffffffffffffb9c0
+  RSP = 00000000043f9288  RBP = 0000000000000000
+  RSI = 0000000000000001  RDI = 00000000498fe380
+ 
+   R8 = fffffffffffefff8   R9 = 209e0960eb959a29
+  R10 = 0000000000000000  R11 = 00000000498fe388
+  R12 = 0000000000000000  R13 = 00000000498f9d40
+  R14 = 0000000000000000  R15 = 0000000000000000
+ 
+  RIP = 00000000086ce4f0  EFL = 00010202
+ 
+   CS = 0033   FS = 0053   GS = 002b
+
+Stack Trace (from fault):
+[  0] 0x00000000086ce4f0 C:\Windows\WinSxS\amd64_microsoft.vc90.crt_1fc8b3b9a1e18e3b_9.0.30729.9619_none_08e065a3a84109b0\MSVCR90.dll+00124144 memmove+00000704
+[  1] 0x000000000c9a1310 C:\YU\YU\职业发展\Research\GATech\data_driven_control\SOS\tools\SOSAnalysis\SeDuMi_1_3\qrK.mexw64+00004880
+[  2] 0x000000000c9a1df7 C:\YU\YU\职业发展\Research\GATech\data_driven_control\SOS\tools\SOSAnalysis\SeDuMi_1_3\qrK.mexw64+00007671 mexFunction+00000279
+[  3] 0x00000000fc626594                               bin\win64\libmex.dll+00288148 MexRetrieveVersion+00002916
+[  4] 0x00000000fc62678c                               bin\win64\libmex.dll+00288652 MexRetrieveVersion+00003420
+[  5] 0x00000000fc6268de                               bin\win64\libmex.dll+00288990 MexRetrieveVersion+00003758
+[  6] 0x00000000fc612ec3                               bin\win64\libmex.dll+00208579 mexUnlock_800+00024147
+[  7] 0x00000000166fc51a                     bin\win64\pgo\m_dispatcher.dll+00050458 Mfh_file::dispatch_fh_impl+00001114
+[  8] 0x00000000166fc0b2                     bin\win64\pgo\m_dispatcher.dll+00049330 Mfh_file::dispatch_fh+00000062
+[  9] 0x00000000166f4674                     bin\win64\pgo\m_dispatcher.dll+00018036 Mfunction_handle::dispatch+00000420
+[ 10] 0x00000000175f0189                            bin\win64\pgo\m_lxe.dll+00393609
+[ 11] 0x000000001767a808                            bin\win64\pgo\m_lxe.dll+00960520 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00121832
+[ 12] 0x000000001767b403                            bin\win64\pgo\m_lxe.dll+00963587 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00124899
+[ 13] 0x000000001767c836                            bin\win64\pgo\m_lxe.dll+00968758 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130070
+[ 14] 0x000000001767d3f0                            bin\win64\pgo\m_lxe.dll+00971760 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00133072
+[ 15] 0x000000001767c97f                            bin\win64\pgo\m_lxe.dll+00969087 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130399
+[ 16] 0x000000001767ca7e                            bin\win64\pgo\m_lxe.dll+00969342 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130654
+[ 17] 0x00000000175fe8a5                            bin\win64\pgo\m_lxe.dll+00452773
+[ 18] 0x00000000175fb335                            bin\win64\pgo\m_lxe.dll+00439093
+[ 19] 0x00000000175fa82e                            bin\win64\pgo\m_lxe.dll+00436270
+[ 20] 0x00000000175f8b35                            bin\win64\pgo\m_lxe.dll+00428853
+[ 21] 0x00000000175f8e9e                            bin\win64\pgo\m_lxe.dll+00429726
+[ 22] 0x00000000175f8e29                            bin\win64\pgo\m_lxe.dll+00429609
+[ 23] 0x00000000166fc51a                     bin\win64\pgo\m_dispatcher.dll+00050458 Mfh_file::dispatch_fh_impl+00001114
+[ 24] 0x00000000166fc0b2                     bin\win64\pgo\m_dispatcher.dll+00049330 Mfh_file::dispatch_fh+00000062
+[ 25] 0x00000000166f4674                     bin\win64\pgo\m_dispatcher.dll+00018036 Mfunction_handle::dispatch+00000420
+[ 26] 0x00000000175f2aa1                            bin\win64\pgo\m_lxe.dll+00404129
+[ 27] 0x0000000017678e25                            bin\win64\pgo\m_lxe.dll+00953893 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00115205
+[ 28] 0x000000001767a808                            bin\win64\pgo\m_lxe.dll+00960520 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00121832
+[ 29] 0x000000001767b403                            bin\win64\pgo\m_lxe.dll+00963587 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00124899
+[ 30] 0x000000001767c836                            bin\win64\pgo\m_lxe.dll+00968758 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130070
+[ 31] 0x000000001767d3f0                            bin\win64\pgo\m_lxe.dll+00971760 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00133072
+[ 32] 0x000000001767c97f                            bin\win64\pgo\m_lxe.dll+00969087 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130399
+[ 33] 0x000000001767ca7e                            bin\win64\pgo\m_lxe.dll+00969342 mwboost::serialization::singleton<mwboost::archive::detail::pointer_iserializer<mwboost::archive::binaryTerm_iarchive,ir::IrTree> >::get_instance+00130654
+[ 34] 0x00000000175fe8a5                            bin\win64\pgo\m_lxe.dll+00452773
+[ 35] 0x00000000175fb335                            bin\win64\pgo\m_lxe.dll+00439093
+[ 36] 0x00000000175fa82e                            bin\win64\pgo\m_lxe.dll+00436270
+[ 37] 0x0000000017601b9a                            bin\win64\pgo\m_lxe.dll+00465818
+[ 38] 0x000000001760133d                            bin\win64\pgo\m_lxe.dll+00463677
+[ 39] 0x000000001760144e                            bin\win64\pgo\m_lxe.dll+00463950
+[ 40] 0x00000000177a1d9c                            bin\win64\pgo\m_lxe.dll+02170268 mwboost::serialization::singleton<mwboost::archive::detail::pointer_oserializer<mwboost::archive::binary_oarchive,MathWorks::lxe::PreLineExecutionEvent> >::get_instance+00475644
+[ 41] 0x00000000177a1d4a                            bin\win64\pgo\m_lxe.dll+02170186 mwboost::serialization::singleton<mwboost::archive::detail::pointer_oserializer<mwboost::archive::binary_oarchive,MathWorks::lxe::PreLineExecutionEvent> >::get_instance+00475562
+[ 42] 0x00000000175d051d                            bin\win64\pgo\m_lxe.dll+00263453
+[ 43] 0x0000000016908acf                    bin\win64\pgo\m_interpreter.dll+00297679 inEvalCmdWithLocalReturn+00000063
+[ 44] 0x00000000fb60bedb                          bin\win64\libmwbridge.dll+00114395 mnParser+00001595
+[ 45] 0x0000000016556564                                  bin\win64\mcr.dll+00222564 mcr::runtime::setInterpreterThreadSingletonToCurrent+00091332
+[ 46] 0x00000000165597ae                                  bin\win64\mcr.dll+00235438 mcr::runtime::setInterpreterThreadSingletonToCurrent+00104206
+[ 47] 0x0000000016576c8a                                  bin\win64\mcr.dll+00355466 mcrRegisterExternalFunction+00007930
+[ 48] 0x00000000165789bc                                  bin\win64\mcr.dll+00362940 mcrRegisterExternalFunction+00015404
+[ 49] 0x0000000016575bff                                  bin\win64\mcr.dll+00351231 mcrRegisterExternalFunction+00003695
+[ 50] 0x0000000016576c46                                  bin\win64\mcr.dll+00355398 mcrRegisterExternalFunction+00007862
+[ 51] 0x0000000016575ce3                                  bin\win64\mcr.dll+00351459 mcrRegisterExternalFunction+00003923
+[ 52] 0x0000000016578ff6                                  bin\win64\mcr.dll+00364534 mcrRegisterExternalFunction+00016998
+[ 53] 0x00000000fd014f67                                  bin\win64\iqm.dll+00544615 iqm::IqmPlugin<cmddistributor::PackagedTaskIIP>::getIIP+00016215
+[ 54] 0x00000000fd01567f                                  bin\win64\iqm.dll+00546431 iqm::PackagedTaskPlugin::execute+00000911
+[ 55] 0x00000000fd014fed                                  bin\win64\iqm.dll+00544749 iqm::IqmPlugin<cmddistributor::PackagedTaskIIP>::getIIP+00016349
+[ 56] 0x00000000fd0154c3                                  bin\win64\iqm.dll+00545987 iqm::PackagedTaskPlugin::execute+00000467
+[ 57] 0x00000000fcfed9ea                                  bin\win64\iqm.dll+00383466 iqm::Iqm::setupIqmFcnPtrs+00071994
+[ 58] 0x00000000fcfed84c                                  bin\win64\iqm.dll+00383052 iqm::Iqm::setupIqmFcnPtrs+00071580
+[ 59] 0x00000000fcfce722                                  bin\win64\iqm.dll+00255778 iqm::Iqm::deliver+00003730
+[ 60] 0x00000000fcfcf749                                  bin\win64\iqm.dll+00259913 iqm::Iqm::deliver+00007865
+[ 61] 0x00000001001aa211                        bin\win64\libmwservices.dll+01810961 services::system_events::PpeDispatchHook::dispatchOne+00030865
+[ 62] 0x00000001001b7ff3                        bin\win64\libmwservices.dll+01867763 sysq::addProcessPendingEventsUnitTestHook+00004659
+[ 63] 0x00000001001b81e0                        bin\win64\libmwservices.dll+01868256 sysq::addProcessPendingEventsUnitTestHook+00005152
+[ 64] 0x00000001001b9576                        bin\win64\libmwservices.dll+01873270 sysq::getCondition+00003446
+[ 65] 0x00000001001bb0e6                        bin\win64\libmwservices.dll+01880294 svWS_ProcessPendingEvents+00000230
+[ 66] 0x0000000016560737                                  bin\win64\mcr.dll+00263991 mcr::runtime::setInterpreterThreadSingletonToCurrent+00132759
+[ 67] 0x0000000016562360                                  bin\win64\mcr.dll+00271200 mcr::runtime::setInterpreterThreadSingletonToCurrent+00139968
+[ 68] 0x000000001653e9b7                                  bin\win64\mcr.dll+00125367 mcr_process_events+00001959
+[ 69] 0x000000001640fef5                             bin\win64\MVMLocal.dll+00327413 mvm_server::inproc::LocalFactory::terminate+00139589
+[ 70] 0x00000000fa9605b9                                  bin\win64\mvm.dll+01246649 mvm::detail::initLocalMvmHack+00000793
+[ 71] 0x00000000fa960dcb                                  bin\win64\mvm.dll+01248715 mvm::detail::SessionImpl::privateSession+00000555
+[ 72] 0x00000000fa960ff1                                  bin\win64\mvm.dll+01249265 mvm::detail::SessionImpl::privateSession+00001105
+[ 73] 0x000000014000780d                               bin\win64\MATLAB.exe+00030733
+[ 74] 0x000000014000862f                               bin\win64\MATLAB.exe+00034351
+[ 75] 0x00007ff9657f7c24                   C:\Windows\System32\KERNEL32.DLL+00097316 BaseThreadInitThunk+00000020
+[ 76] 0x00007ff965ead4d1                      C:\Windows\SYSTEM32\ntdll.dll+00447697 RtlUserThreadStart+00000033
+
+
+This error was detected while a MEX-file was running. If the MEX-file
+is not an official MathWorks function, please examine its source code
+for errors. Please consult the External Interfaces Guide for information
+on debugging MEX-files.
