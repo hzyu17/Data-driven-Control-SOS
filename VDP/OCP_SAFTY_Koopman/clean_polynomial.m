@@ -1,23 +1,28 @@
-function polynomial = clean_polynomial(polynomial, tol)
+function input_polynomial = clean_polynomial(input_polynomial, tol)
 % Wipe out those very small coefficients in a polynomial
-% poly_coeffs = poly2basis(polynomial, basis);
-% c_div_full = full(poly_coeffs);
-% for divi = 1: length(c_div_full)
-%     if abs(c_div_full(divi)) < 1e-8
-%         c_div_full(divi) = 0.0;
-%     end
-% end
-% poly_coeffs = sparse(c_div_full);
-% polynomial  = poly_coeffs' * basis;
+issym = false;
 
-leng = length(polynomial.coefficient(:));
-left_coeffs = polynomial.coefficient(:);
+if isa(input_polynomial, 'polynomial')
+    disp('clean polynomial coefficients')
+elseif isa(input_polynomial, 'sym')
+    input_polynomial = s2p(input_polynomial);
+    issym = true;
+    disp('clean polynomial coefficients')
+else
+    keyboard
+end
+
+leng = length(input_polynomial.coefficient(:));
+left_coeffs = input_polynomial.coefficient(:);
 for i_coef = 1:length(left_coeffs)
     if (abs(left_coeffs(i_coef)) < tol)
         left_coeffs(i_coef) = 0.0;
     end
 end
-polynomial.coefficient = left_coeffs;
+input_polynomial.coefficient = left_coeffs;
 
+if issym
+    input_polynomial = p2s(input_polynomial);
+end
 end
 

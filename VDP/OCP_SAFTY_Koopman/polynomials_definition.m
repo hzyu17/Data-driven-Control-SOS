@@ -1,22 +1,34 @@
-function polynomials_definition(coeff_q)
+function polynomials_definition(dynamics_option)
 % generating polynomials
 
-% VDP
-total_deg = 14;
+% VDP L1
+total_deg = 22;
 pvar x1 x2
-x = [x1; x2];
-nx = length(x);
+var_poly.x = [x1; x2];
+var_poly.x1 = x1;
+var_poly.x2 = x2;
+
+nx = length(var_poly.x);
 
 nPsi = nchoosek(total_deg+nx, total_deg);
-Psi = monomials([x1 x2], [0:total_deg]);
+Psi = monomials(var_poly.x, [0:total_deg]);
 Psi_sym = p2s(Psi);
 
 % optimal control polynomials
+% VDP L1
 deg_a = 4;
 
-% dimension of the control input c(x)
-dim_m = 2;
-deg_c = [6, 6];
+if strcmp(dynamics_option, 'vdp')
+    % vdp, 1 dimensional
+    % VDP L1
+    dim_m = 1;
+%     deg_c = 6;
+    % VDP L2
+    deg_c = 5;
+else % 2 dimensional
+    dim_m = 2;
+    deg_c = [6, 6];
+end
 
 if length(deg_c) ~= dim_m
     disp('wrong dimension of inputs')
@@ -25,15 +37,23 @@ end
 
 max_degc = max(deg_c);
 deg_w = max_degc*2 - deg_a;
-Alph = 4; 
+% VDP L1
+% Alph = 4; 
+
+% VDP L2
+Alph = 2;
 
 % define for ax cx wx
 Qa = nchoosek(deg_a+nx, nx);
 c_a = mpvar('c_a', [Qa, 1]);
 c_a = [c_a; zeros(nPsi - Qa, 1)];
 c_a_sym = p2s(c_a);
-poly_a = c_a'* Psi;
-poly_a_sym = c_a_sym' * Psi_sym;
+% set the constant term in ax is 1: increase feasratio
+% c_a_1 = sym(1);
+% c_a_sym = [c_a_1; c_a_sym(2:end)];
+
+poly_a = transpose(c_a)* Psi;
+poly_a_sym = transpose(c_a_sym) * Psi_sym;
 
 Qc = [];
 c_c = [];
@@ -49,10 +69,13 @@ for i_c = 1:dim_m
     c_c_i = [c_c_i; zeros(nPsi - Qc_i, 1)];
     c_c = [c_c, {c_c_i}];
     c_c_i_sym = p2s(c_c_i);
+    % set the constant term in cx is 1: not working feasratio = -1.0097
+%     c_c_i_1 = sym(1);
+%     c_c_i_sym = [c_c_i_1; c_c_i_sym(2:end)];
     c_c_sym = [c_c_sym; {c_c_i_sym}];
-    poly_c_i = c_c_i' * Psi;
+    poly_c_i = transpose(c_c_i) * Psi;
     poly_c = [poly_c; poly_c_i];
-    poly_c_sym_i = c_c_i_sym' * Psi_sym;
+    poly_c_sym_i = transpose(c_c_i_sym) * Psi_sym;
     poly_c_sym = [poly_c_sym; poly_c_sym_i];
 end
 
@@ -60,38 +83,30 @@ Qw = nchoosek(deg_w+nx, nx);
 c_w = mpvar('c_w', [Qw, 1]);
 c_w = [c_w; zeros(nPsi - Qw, 1)];
 c_w_sym = p2s(c_w);
-poly_w_sym = c_w_sym' * Psi_sym;
 
-pvar x1 x2
-x = [x1; x2];
+poly_w_sym = transpose(c_w_sym) * Psi_sym;
 
-[fx, gx] = dynamics_vdp();
-dim_m = size(gx);
+dynamics_sym = dynamics_definition('sym', dynamics_option);
+
+dim_m = size(dynamics_sym.G);
 dim_m = dim_m(2);
 
 % local controller design using LQR
 syms x1 x2
-x = [x1;x2];
-A = double(subs(jacobian(fx,x),x,[0;0]));  
-Q = [1 0;0 1]; 
-R = eye(dim_m); 
-N = 0;
-B = gx;
+var_sym.x = [x1;x2];
+var_sym.x1 = x1;
+var_sym.x2 = x2;
 
-[K,S,e] = lqr(A,B,Q,R,N);
-I = [1 0;0 1];
-if strcmp(class(x1), 'polynomial') == 1
-    poly_b = x.'*S*x;
-    poly_b_sym = p2s(poly_b);
-else
-    poly_b_sym = x.'*S*x;
-end
+% local lqr
+lc_lqr = generate_local_lqr(dynamics_sym, var_sym, dim_m);
+
+poly_b = var_poly.x'*lc_lqr.S*var_poly.x;
+poly_b_sym = var_sym.x.'*lc_lqr.S*var_sym.x;
 
 % define for qx
-syms x1 x2
 % poly_q_sym = 3.5*x1^2 + x2^2;
 %inverted pendulum
-poly_q_sym = x1^2 + x2^2;
+poly_q_sym = var_sym.x1^2 + var_sym.x2^2;
 
 % define for abx, acx
 poly_bc_sym = [];
@@ -101,13 +116,18 @@ for i_c = 1:dim_m
 end
 
 %%
-syms x1 x2
-x = [x1; x2];
 c_bc_sym = [];
 for i_c = 1:dim_m
-    c_bc_sym = [c_bc_sym; getSymCoeffs(poly_bc_sym(i_c), x, Psi)];
+    c_bc_sym = [c_bc_sym; getSymCoeffs(poly_bc_sym(i_c), var_sym.x, Psi)];
 end
-c_ab_sym = getSymCoeffs(poly_ab_sym, x, Psi);
+c_ab_sym = getSymCoeffs(poly_ab_sym, var_sym.x, Psi);
+
+assume(c_a_sym, 'real');
+for i_c = 1:dim_m
+    c_c_i = c_c_sym(i_c);
+    assume(c_c_i{1:end}, 'real');
+end
+assume(c_w_sym, 'real');
 
 save('polynomials_def')
 
