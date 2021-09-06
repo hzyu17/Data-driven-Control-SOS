@@ -78,11 +78,11 @@ end
 
 %% solve ocp
 % for lamda = 1e5 % corresponding to van der pol dynamics
-% lambda = 50; % 2-dim integrator
+% lambda = 40; % 2-dim integrator
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
-for lambda = [10, 20, 30, 40, 50] % L1 vdp data-driven
-% for lambda = [10, 20, 30, 40, 50] % L2 vdp
-    sos_prog_file = create_sosprog('L1');
+% for lambda = [10, 20, 30, 40, 50] % L1 vdp data-driven
+for lambda = [0, 10, 20] % L2 vdp
+    sos_prog_file = create_sosprog('L2');
     ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, data_driven_option, gEDMD_filename);
 
     % plotting ocp results
