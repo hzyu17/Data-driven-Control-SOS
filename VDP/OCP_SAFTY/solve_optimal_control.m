@@ -1,16 +1,19 @@
-function [data_file_name] = solve_optimal_control(lambda, sos_prog_file, data_approx_option, gEDMD_file)
+function [data_file_name] = solve_optimal_control(lambda, sos_prog_file, gEDMD_file, option)
 %% preparations
 disp('------ Loading predefined sos program -------')
-sos_prog_file
+
+% load file
 load(sos_prog_file);
 
+% data driven or not
+data_approx_option = option.data_driven_option;
+
+% geometry
 geometry = domain_definition();
 
-% numerical truncation
-% truncation_precision = 12;
-truncation_precision = 9;
-% trunc_decim = 1e-12;
-trunc_decim = 1e-12;
+%numerical truncations
+solution_truncation = option.solution_truncation;
+trunc_decim = option.variable_trunc;
 
 %% objective function (linear function of c_a and c_c)
 % Psi_sym = p2s(Psi);
@@ -75,8 +78,8 @@ if strcmp(data_approx_option.type, 'data_driven')
         Div_G = Div_G + Div_Gi;
     end
 
-    Div_F.coefficient(find(abs(Div_F.coefficient) <= 1e-9)) = 0;
-    Div_G.coefficient(find(abs(Div_G.coefficient) <= 1e-9)) = 0;
+    Div_F.coefficient(find(abs(Div_F.coefficient) <= trunc_decim)) = 0;
+    Div_G.coefficient(find(abs(Div_G.coefficient) <= trunc_decim)) = 0;
 
     % term1
     term(1) = c_a'*L{1}*Psi + c_a'*Psi*Div_F;
@@ -100,7 +103,9 @@ if strcmp(data_approx_option.type, 'data_driven')
 %     poly_b_sym = p2s(poly_b);
 %     poly_c_sym = p2s(poly_c);
     constraint_poly = (1+Alph).*poly_b*sum(term(1:2)) - Alph.*sum(term(3:4));
-    constraint_poly.coefficient(find(abs(constraint_poly.coefficient)<=1e-3)) = 0;
+    % L1-DATA-DRIVEN
+%     constraint_poly.coefficient(find(abs(constraint_poly.coefficient)<=1e-1)) = 0;
+    constraint_poly.coefficient(find(abs(constraint_poly.coefficient)<=solution_truncation)) = 0;
     constraint_sym = p2s(constraint_poly);
     
 elseif strcmp(data_approx_option.type, 'model_based')
@@ -140,7 +145,7 @@ for i_c = 1:dim_m
     if cx_sol_sym(i_c) == 0
         keyboard
     end
-    cx_sol_sym_i = cx_sol_sym(i_c)
+    cx_sol_sym_i = cx_sol_sym(i_c);
     cx_sol = [cx_sol; s2p(cx_sol_sym(i_c))];
 end
 ax_sol_sym = sosgetsol(sos_prog, poly_a_sym);
@@ -149,7 +154,7 @@ ax_sol_sym = sosgetsol(sos_prog, poly_a_sym);
 % vdp
 % ax_sol_sym = clean_polynomial(ax_sol_sym, trunc_decim);
 % ax_sol_sym = vpa(ax_sol_sym, truncation_precision);
-ax_sol = s2p(ax_sol_sym)
+ax_sol = s2p(ax_sol_sym);
 
 wx_sol_sym = sosgetsol(sos_prog, poly_w_sym);
 % coeff_wx = get_coefficients(wx_sol_sym);
@@ -161,10 +166,13 @@ bx_sol_sym = sosgetsol(sos_prog, poly_b_sym);
 bx_sol = s2p(bx_sol_sym);
  
  %% data file
+ data_driven_type = option.data_driven_option.type;
+ input_regularizer = option.control_penalty_type;
 disp('----- Saving solved optimal control data: -----')
 date = sprintf('%s', datestr(now,'mm_dd_HH_MM'));
+
 data_file_name = ['experiments/',date,'_',dynamics_option,...
-    '_optimal_control_lbd_', num2str(lambda), '_',input_regularizer,'_feasratio_', num2str(ocp_info.feasratio),'.mat'];
+    '_optimal_control_lbd_', num2str(lambda), '_',input_regularizer,'_',data_driven_type,'_feasratio_', num2str(ocp_info.feasratio),'.mat'];
 % disp(data_file_name);
 
 % save file
@@ -172,7 +180,7 @@ save(data_file_name);
 
 %% plotting elements
 % save in the mat file
-plotting_elements = plotting_handler(data_file_name);
+plotting_elements = plotting_handler(data_file_name, option);
 
 %% save file:  added the plotting elements
 save(data_file_name)

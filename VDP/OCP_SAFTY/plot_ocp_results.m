@@ -116,11 +116,13 @@ view(-19,56)
 
 %% save optimal control results
 date = sprintf('%s', datestr(now,'mm_dd_HH_MM'));
-
-name_ocp_trj = ['res/',date, '_', dynamics_option,'_trj_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio),'.png'];
-name_ocp_trj_fig = ['res/',date, '_', dynamics_option, '_trj_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio),'.fig'];
-name_ocp_trj_zoomed = ['res/',date, '_', dynamics_option,'_trj_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio),'_zoomed','.png'];
-name_ocp_trj_fig_zoomed = ['res/',date, '_', dynamics_option, '_trj_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio),'_zoomed','.fig'];
+data_driven_type = option.data_driven_option.type;
+regularizing_type = option.control_penalty_type;
+file_prefix = ['res/',date, '_', dynamics_option,'_trj_',regularizing_type,'_',data_driven_type,'_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio)];
+name_ocp_trj = [file_prefix,'.png'];
+name_ocp_trj_fig = [file_prefix,'.fig'];
+name_ocp_trj_zoomed = [file_prefix,'_zoomed','.png'];
+name_ocp_trj_fig_zoomed = [file_prefix,'_zoomed','.fig'];
 
 saveas(fig1, name_ocp_trj);
 saveas(fig1, name_ocp_trj_fig);

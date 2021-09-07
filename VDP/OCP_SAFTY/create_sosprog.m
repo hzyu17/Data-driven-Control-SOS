@@ -1,9 +1,9 @@
-function data_file_name = create_sosprog(input_regularizer)
+function data_file_name = create_sosprog(option)
 %%
 % polynomials a, b, c, q, R, w: if it does not exist, please first run polynomials_definition.m
 load('polynomials_def.mat')
 geometry = domain_definition();
-
+input_regularizer = option.control_penalty_type;
 %% sos constraints on OCP equivalent matrix SDP
 % add poly_w as decision variables
 sos_prog = sosprogram(var_sym.x);
@@ -138,7 +138,10 @@ end
  %% saving data
 disp('----- Saving solved optimal control data: -----')
 date = sprintf('%s', datestr(now,'mm_dd_HH_MM'));
-data_file_name = ['sos_program_data/',date,'_optimal_control_sos_prog_',input_regularizer,'.mat'];
+data_driven_type = option.data_driven_option.type;
+regularizing_type = option.control_penalty_type;
+
+data_file_name = ['sos_program_data/',date,'_optimal_control_sos_prog_',data_driven_type,'_',regularizing_type,'.mat'];
 disp(data_file_name)
 save(data_file_name)
 end

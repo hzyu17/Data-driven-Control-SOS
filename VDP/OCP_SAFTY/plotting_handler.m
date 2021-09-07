@@ -1,4 +1,4 @@
-function ocp_plot_elements = plotting_handler(data_file)
+function ocp_plot_elements = plotting_handler(data_file,  experiment_option)
 % calculate the elements to plot, e.g., the vector fields, the
 % trajectories, and the surfaces, etc.
 
@@ -26,7 +26,7 @@ end
 if exist('dynamics_sym') == 0
     dynamics_sym = dynamics_definition('sym', dynamics_option);
 end
-
+geometry = domain_definition();
 %%
 % ==========
 % vector field 
@@ -59,6 +59,7 @@ num_xinit = geometry.num_xinit;
 ocp_plot_elements.xints = cell(1, num_xinit);
 ocp_plot_elements.trajectory.tcont = cell(1, num_xinit);
 ocp_plot_elements.trajectory.ycont = cell(1, num_xinit);
+switch_controller = experiment_option.switch_controller;
 for i_xinit = 1:num_xinit
     xinits = [ -0.4,-0.4; -0.2,-0.2; -0.0,0.3; 0.2,0.1; 0.3, 0.4; 0.6, 0.6; 1, 0; 0, 1; -1, 0]*geometry.r_xinit(i_xinit) + geometry.X_init_cen(i_xinit, :);
     ocp_plot_elements.xints{i_xinit} = xinits;
@@ -72,19 +73,22 @@ for i_xinit = 1:num_xinit
         [tcont{l1}, ycont{l1}] = ode15s(@(t,pt) control_dynamics_defn(dynamics_option, pt, var_poly.x, cx_sol, ax_sol), tspan, xinit');
     end
     %% local lqr controller
-    if strcmp(dynamics_option, 'zero_f_eye_u')
+    if strcmp(switch_controller, 'local_lqr')
         for l1 = 1:length(xinits)
-            xinit = ycont{1, l1}(end, :);
+            start_point = 1;
+            while sum(ycont{1, l1}(start_point, :).*ycont{1, l1}(start_point, :)) > geometry.r_xr^2
+                start_point = start_point + 1;
+            end
+            if start_point == size(ycont{1, l1}, 1) % no trajectory inside the X_r
+                break
+            end
+            xinit = ycont{1, l1}(start_point, :);
             [~, ycont_lqr{l1}] = ode15s(@(t,pt) local_lqr_control(lc_lqr, pt, var_poly.x), tspan, xinit');
-            ycont{l1} = [ycont{l1}; ycont_lqr{l1}];
+            ycont{l1} = [ycont{l1}(1:start_point, :); ycont_lqr{l1}];
         end
     end
     ocp_plot_elements.trajectory.tcont{i_xinit} = tcont;
     ocp_plot_elements.trajectory.ycont{i_xinit} = ycont;
-end
-
-if strcmp(data_approx_option.type, 'data_driven') %data driven need local controller
-    
 end
 
 %%

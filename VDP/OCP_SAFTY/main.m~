@@ -62,45 +62,21 @@ close all
 clc
 
 %%
-experiment = 'L2-data driven vdp'; % L1-data driven, L2-data driven, L1-model, L2-model
-%% configurations 
-if strcmp(experiment, 'L1-data driven vdp')
-    %% configuration for L1-data driven
-    option.dynamics_option = 'vdp'; % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
-    option.data_driven_option.type = 'data_driven'; % 'data_driven' and 'model_based'
-    option.data_driven_option.approx = 'gEDMD';
-    option.control_penalty_type = 'L1';
-    option.degrees.total_deg = 9;
-    option.degrees.deg_a = 4;
-    option.degrees.deg_c = 6;
-    option.degrees.Alph = 4;
-    option.degrees.dim_m=1;
-    option.degrees.deg_q = 4;
-    option.poly_b_type = 'lqr';
-    option.solution_truncation = 1e-1;
-    option.variable_trunc = 1e-9;
-    option.switch_controller = 'local_lqr'; % local_lqr, non-switch
-    
-elseif strcmp(experiment, 'L2-data driven vdp')
-    %% configuration for L2-data driven
-    option.dynamics_option = 'vdp';
-    option.data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
-    option.data_driven_option.approx = 'gEDMD';
-    option.control_penalty_type = 'L2';
-    option.degrees.total_deg = 9;
-    option.degrees.deg_a = 4;
-    option.degrees.deg_c = 6;
-    option.degrees.Alph = 4;
-    option.degrees.dim_m=1;
-    option.degrees.deg_q = 4;
-    option.poly_b_type = 'lqr';
-    option.solution_truncation = 1e-1;
-    option.variable_trunc = 1e-9;
-    option.switch_controller = 'local_lqr'; % local_lqr, non-switch
-end
-
+% poly_flg = 0; %polynomial or rational
+% configuration for L1-data d
+option.dynamics_option = 'vdp';
+option.data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
+option.data_driven_option.approx = 'gEDMD';
+option.control_penalty_type = 'L1';
+option.degrees.total_deg = 9;
+option.degrees.deg_a = 4;
+option.degrees.deg_c = 6;
+option.degrees.Alph = 4;
+option.degrees.dim_m=1;
+option.degrees.deg_q = 4;
+option.poly_b_type = 'lqr';
 %% polynomial definitions
-polynomials_definition(option); 
+polynomials_definition(option); % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
 
 %% gEDMD
 if strcmp(option.data_driven_option.type, 'data_driven')
@@ -114,9 +90,9 @@ end
 % lambda = 40; % 2-dim integrator
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
 % for lambda = [10, 20, 30, 40, 50] % L1 vdp data-driven
-for lambda = [100 300 500 700 800 900 1000 5000 10000] % L2 vdp
+for lambda = [0] % L2 vdp
     sos_prog_file = create_sosprog(option);
-    ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, gEDMD_filename, option);
+    ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, data_driven_option, gEDMD_filename, option);
 
     % plotting ocp results
     % ocp_data_file_name = 'experiments/07_02_00_03_optimal_control_results_SOS_Rational_lbd_50000.mat';

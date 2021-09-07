@@ -1,4 +1,4 @@
-function gEDMD_filename = sampling_gEDMD(data_driven_option)
+function gEDMD_filename = sampling_gEDMD(option)
 
 %% Notes and logs
 % 01/12/2021 cellfun, matlabFunction is much more faster than subs() for
@@ -10,7 +10,7 @@ clear all
 
 %%
 load('polynomials_def')
-
+data_driven_option = option.data_driven_option;
 % 3. Coefficients of x
 c_x = poly2basis(var_poly.x', Psi);
 

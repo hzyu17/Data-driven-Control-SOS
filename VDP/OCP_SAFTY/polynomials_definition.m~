@@ -1,24 +1,35 @@
 function polynomials_definition(option)
 % generating polynomials
 dynamics_option = option.dynamics_option;
-
-total_deg = option.degrees.total_deg;
-deg_a = option.degrees.deg_a;
-deg_c = option.degrees.deg_c;
-Alph = option.degrees.Alph;
-dim_m = option.degrees.dim_m;
-deg_q = option.degrees.deg_q;
-poly_b_type = option.poly_b_type;
-
+% VDP L1
+if strcmp(option.control_penalty_type,
+total_deg = 9;
 pvar x1 x2
 var_poly.x = [x1; x2];
 var_poly.x1 = x1;
 var_poly.x2 = x2;
+
 nx = length(var_poly.x);
 
 nPsi = nchoosek(total_deg+nx, total_deg);
 Psi = monomials(var_poly.x, [0:total_deg]);
 Psi_sym = p2s(Psi);
+
+% optimal control polynomials
+% VDP L1
+deg_a = 4;
+
+if strcmp(dynamics_option, 'vdp')
+    % vdp, 1 dimensional
+    % VDP L1
+    dim_m = 1;
+%     deg_c = 6;
+    % VDP L2
+    deg_c = 6;
+else % 2 dimensional
+    dim_m = 2;
+    deg_c = [6, 6];
+end
 
 if length(deg_c) ~= dim_m
     disp('wrong dimension of inputs')
@@ -27,6 +38,14 @@ end
 
 max_degc = max(deg_c);
 deg_w = max_degc*2 - deg_a;
+% VDP L1
+% Alph = 4; 
+
+% VDP L1 DATA DRIVEN
+Alph = 4;
+
+% VDP L2
+% Alph = 2;
 
 % define for ax cx wx
 Qa = nchoosek(deg_a+nx, nx);
@@ -83,14 +102,10 @@ var_sym.x1 = x1;
 var_sym.x2 = x2;
 
 % local lqr
-if strcmp(poly_b_type, 'lqr')
-    lc_lqr = generate_local_lqr(dynamics_sym, var_sym, dim_m);
-    poly_b = var_poly.x'*lc_lqr.S*var_poly.x;
-    poly_b_sym = var_sym.x.'*lc_lqr.S*var_sym.x;
-elseif strcmp(poly_b_type, 'quadratic')
-    poly_b = var_poly.x'*var_poly.x;
-    poly_b_sym = var_sym.x.'*var_sym.x;
-end
+lc_lqr = generate_local_lqr(dynamics_sym, var_sym, dim_m);
+
+poly_b = var_poly.x'*lc_lqr.S*var_poly.x;
+poly_b_sym = var_sym.x.'*lc_lqr.S*var_sym.x;
 
 % define for qx
 % poly_q_sym = 3.5*x1^2 + x2^2;
@@ -98,7 +113,7 @@ end
 % poly_q_sym = var_sym.x1^2 + var_sym.x2^2;
 
 % L1 data driven
-poly_q_sym = var_sym.x1^deg_q + var_sym.x2^deg_q;
+poly_q_sym = var_sym.x1^4 + var_sym.x2^4;
 
 % define for abx, acx
 poly_bc_sym = [];
