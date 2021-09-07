@@ -77,7 +77,7 @@ if strcmp(experiment, 'L1-data driven vdp')
     option.degrees.dim_m=1;
     option.degrees.deg_q = 4;
     option.poly_b_type = 'lqr';
-    option.solution_truncation = 1e-1;
+    option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
     option.switch_controller = 'local_lqr'; % local_lqr, non-switch
     
@@ -94,7 +94,7 @@ elseif strcmp(experiment, 'L2-data driven vdp')
     option.degrees.dim_m=1;
     option.degrees.deg_q = 4;
     option.poly_b_type = 'lqr';
-    option.solution_truncation = 1e-1;
+    option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
     option.switch_controller = 'local_lqr'; % local_lqr, non-switch
 end
@@ -113,8 +113,9 @@ end
 % for lamda = 1e5 % corresponding to van der pol dynamics
 % lambda = 40; % 2-dim integrator
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
-% for lambda = [10, 20, 30, 40, 50] % L1 vdp data-driven
-for lambda = [100 300 500 700 800 900 1000 5000 10000] % L2 vdp
+% for lambda = [100 300 500 700 800 900 1000 5000 10000] % L1 vdp data-driven
+% for lambda = [0 100 1000 1e4 1e5 1e6 1e7 5e7] % L2 vdp data-driven
+for lambda = [5e7] % L2 vdp data-driven
     sos_prog_file = create_sosprog(option);
     ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, gEDMD_filename, option);
 

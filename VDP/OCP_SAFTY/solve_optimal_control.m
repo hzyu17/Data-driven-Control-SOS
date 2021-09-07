@@ -31,9 +31,11 @@ if lambda > 0
         upper_bd_Xu = matlabFunction(geometry.X_u_cen(i_xu, 2) + sqrt(geometry.r_xu(i_xu)^2 - (var_sym.x(1) - geometry.X_u_cen(i_xu, 1)).^2));
          for li=1:Qa
                  cost_fun2_hdl = matlabFunction(Psi_sym(li) ./ (poly_b_sym.^Alph));
+                 % cube
                  integral_vec_a_r(li) = integral_vec_a_r(li) + lambda * integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, ... 
                                                                                                                                                       X_u_coord_i.ymin, X_u_coord_i.ymax);
-%                 integral_vec_a_r(li) = lambda * integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, lower_bd_Xu, upper_bd_Xu)
+                 % circle
+%                 integral_vec_a_r(li) = lambda * integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, lower_bd_Xu, upper_bd_Xu);
 %                 integral_vec_a_r(li) = integral_vec_a_r(li) + integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, X_u_coord_i.ymin, X_u_coord_i.ymax);
          end
     end

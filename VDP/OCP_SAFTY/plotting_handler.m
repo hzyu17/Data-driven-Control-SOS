@@ -76,11 +76,11 @@ for i_xinit = 1:num_xinit
     if strcmp(switch_controller, 'local_lqr')
         for l1 = 1:length(xinits)
             start_point = 1;
-            while sum(ycont{1, l1}(start_point, :).*ycont{1, l1}(start_point, :)) > geometry.r_xr^2
+            while sum(ycont{1, l1}(start_point, :).*ycont{1, l1}(start_point, :)) > geometry.r_xr^2 && start_point < size(ycont{1, l1}, 1)
                 start_point = start_point + 1;
             end
             if start_point == size(ycont{1, l1}, 1) % no trajectory inside the X_r
-                break
+                disp('no trajectory entering the reach set')
             end
             xinit = ycont{1, l1}(start_point, :);
             [~, ycont_lqr{l1}] = ode15s(@(t,pt) local_lqr_control(lc_lqr, pt, var_poly.x), tspan, xinit');
