@@ -24,7 +24,7 @@ u = zeros(dim_m, 1); % input
 t = 0; % created but not used 
 L = cell(1,dim_m+1);
 X = cell(1, dim_m+1);
-Y = cell(1, dim_m+1);
+Y = cell(1, dim_m+1)
 for i = 1 : dim_m+1
     Xinit = -5.0 + 10.0 * rand(nx, 10000); % random initial points
     u = zeros(dim_m, 1); 
@@ -36,6 +36,7 @@ for i = 1 : dim_m+1
     Yinit_i = [];
     
     %% gEDMD
+    
     % Generate basis Psi and its time derivative expression
 %     Psi_sym = p2s(Psi);
     grad_Psi = jacobian(Psi_sym);
@@ -65,9 +66,15 @@ for i = 1 : dim_m+1
     spy(Li)
     title('Sparsity visualization of the approximated infinitesimal matrix L')
     
-    X{1, i} = Xi;
-    Y{1,i} = dXi;
-    L{1,i} = Li;
+    if i==1
+        X = Xi;
+        Y = dXi;
+        L = Li;
+    else
+        X = {X,Xi};
+        Y = {Y,dXi};
+        L = {L, Li};
+    end
 
 end
 

@@ -62,7 +62,7 @@ close all
 clc
 
 %%
-experiment = 'L2-data driven vdp'; % L1-data driven, L2-data driven, L1-model, L2-model
+experiment = 'L1-data driven-minus_cubic'; % L1-data driven, L2-data driven, L1-model, L2-model, L1-data driven linear2d, L1-data driven-minus_cubic
 %% configurations 
 if strcmp(experiment, 'L1-data driven vdp')
     %% configuration for L1-data driven
@@ -83,7 +83,7 @@ if strcmp(experiment, 'L1-data driven vdp')
     
 elseif strcmp(experiment, 'L2-data driven vdp')
     %% configuration for L2-data driven
-    option.dynamics_option = 'vdp';
+    option.dynamics_option = 'vdp';  % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
     option.data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
     option.data_driven_option.approx = 'gEDMD';
     option.control_penalty_type = 'L2';
@@ -92,6 +92,36 @@ elseif strcmp(experiment, 'L2-data driven vdp')
     option.degrees.deg_c = 6;
     option.degrees.Alph = 4;
     option.degrees.dim_m=1;
+    option.degrees.deg_q = 4;
+    option.poly_b_type = 'lqr';
+    option.solution_truncation = 1e-0;
+    option.variable_trunc = 1e-9;
+    option.switch_controller = 'local_lqr'; % local_lqr, non-switch
+elseif strcmp(experiment, 'L1-data driven-minus_cubic')
+    option.dynamics_option = 'minus_cubic';  % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
+    option.data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
+    option.data_driven_option.approx = 'gEDMD';
+    option.control_penalty_type = 'L1';
+    option.degrees.dim_m=2;
+    option.degrees.total_deg = 9;
+    option.degrees.deg_a = 4;
+    option.degrees.deg_c = [6 6];
+    option.degrees.Alph = 4;
+    option.degrees.deg_q = 4;
+    option.poly_b_type = 'lqr';
+    option.solution_truncation = 1e-0;
+    option.variable_trunc = 1e-9;
+    option.switch_controller = 'local_lqr'; % local_lqr, non-switch
+elseif strcmp(experiment, 'L1-data driven linear2d')
+    option.dynamics_option = 'linear';  % availables: linear, minus_cubic, rantzer_example, zero_f_eye_u, vdp
+    option.data_driven_option.type = 'data_driven'; % choice between 'data_driven' and 'model_based'
+    option.data_driven_option.approx = 'gEDMD';
+    option.control_penalty_type = 'L1';
+    option.degrees.dim_m=2;
+    option.degrees.total_deg = 9;
+    option.degrees.deg_a = 4;
+    option.degrees.deg_c = [6 6];
+    option.degrees.Alph = 4;
     option.degrees.deg_q = 4;
     option.poly_b_type = 'lqr';
     option.solution_truncation = 1e-0;
@@ -115,8 +145,8 @@ end
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
 % for lambda = [100 300 500 700 800 900 1000 5000 10000] % L1 vdp data-driven
 % for lambda = [0 100 1000 1e4 1e5 1e6 1e7 5e7] % L2 vdp data-driven
-for lambda = [5e7] % L2 vdp data-driven
-    sos_prog_file = create_sosprog(option);
+sos_prog_file = create_sosprog(option);
+for lambda = [100 1000 1e4] % L2 vdp data-driven
     ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, gEDMD_filename, option);
 
     % plotting ocp results

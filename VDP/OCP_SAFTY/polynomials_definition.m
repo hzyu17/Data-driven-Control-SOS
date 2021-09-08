@@ -108,13 +108,13 @@ for i_c = 1:dim_m
 end
 
 %%
-c_bc_sym = [];
-c_bc = [];
+c_bc_sym = cell(1, dim_m);
+c_bc = cell(1, dim_m);
 for i_c = 1:dim_m
     c_bc_i = getSymCoeffs(poly_bc_sym(i_c), var_sym.x, Psi);
-    c_bc = [c_bc; c_bc_i];
+    c_bc{1, i_c} = c_bc_i;
     c_bc_sym_i = p2s(c_bc_i);
-    c_bc_sym = [c_bc_sym, c_bc_sym_i];
+    c_bc_sym{1,i_c} = c_bc_sym_i;
 end
 
 c_ab = getSymCoeffs(poly_ab_sym, var_sym.x, Psi);
