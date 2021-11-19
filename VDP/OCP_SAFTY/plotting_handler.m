@@ -92,14 +92,15 @@ for i_xinit = 1:num_xinit
 end
 
 %%
-ax_over_bx = ax_sol_sym / ((bx_sol_sym)^Alph);
+ax_over_bx = ax_sol_sym / ((poly_b_sym)^Alph);
 Rho_bar = cx_sol_sym ./ ax_sol_sym;
 LHS = ax_over_bx.*dynamics_sym.F + dynamics_sym.G*Rho_bar;
 div_ocp = vec_div(LHS, var_sym.x);
+h_0 = div_ocp / (poly_b_sym^Alph);
 
 ocp_plot_elements.surfaces.ax_over_bx = ax_over_bx;
 ocp_plot_elements.surfaces.div_ocp = div_ocp;
-
+ocp_plot_elements.surfaces.h_0 = h_0;
 % save('ocp_plot_elements.mat', 'ocp_plot_elements');
 
 end

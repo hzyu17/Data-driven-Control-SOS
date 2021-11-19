@@ -23,7 +23,7 @@ integral_vec_a_r = zeros(Qa, 1);
 % unsafe sets and initial sets. Done for the multiple unsafe set case.
 % 06/30: moved the whole integration part in the program construction part.
 % Done with the multiple unsafe sets case.
-
+base_integral_obj = obj_sos;
 if lambda > 0
     for i_xu = 1: num_xu % multiple unsafe sets
         X_u_coord_i = geometry.X_u_coord(i_xu);
@@ -39,7 +39,7 @@ if lambda > 0
 %                 integral_vec_a_r(li) = integral_vec_a_r(li) + integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, X_u_coord_i.ymin, X_u_coord_i.ymax);
          end
     end
-    obj_sos = obj_sos + transpose(c_a_sym(1:Qa)) * integral_vec_a_r
+    obj_sos = obj_sos + transpose(c_a_sym(1:Qa)) * integral_vec_a_r;
 end
 
  % rescale objective function to provide a better numerical condition
@@ -53,7 +53,6 @@ sos_prog = sossetobj(sos_prog, obj_sos);
 if exist('dynamics_sym')==0
     dynamics_sym = dynamics_definition('sym', dynamics_option);
 end
-
 if strcmp(data_approx_option.type, 'data_driven')
     if strcmp(data_approx_option.approx, 'gEDMD')
     %     load('gEDMD_res.mat')
@@ -69,7 +68,18 @@ if strcmp(data_approx_option.type, 'data_driven')
     Div_F = 0; Div_G = 0;
     F = c_x'*L{1}*Psi;
     G = [];
-    for i_input = 2:dim_m
+    
+     for i1 = 1 : nx
+            Div_Fi = diff(F(i1), var_poly.x(i1));
+            Div_F = Div_F + Div_Fi;
+     end
+    Div_F.coefficient(find(abs(Div_F.coefficient) <= trunc_decim)) = 0;
+    % term1
+    term(1) = c_a'*L{1}*Psi + c_a'*Psi*Div_F;
+    % term3
+    term(3) = c_ab'*L{1}*Psi + c_ab'*Psi*Div_F;
+    
+    for i_input = 2:dim_m+1
         if strcmp(data_approx_option.approx, 'gEDMD')
             G = c_x'*(L{i_input}-L{1})*Psi;
         else %EDMD
@@ -77,31 +87,33 @@ if strcmp(data_approx_option.type, 'data_driven')
         end
 
         for i1 = 1 : nx
-            Div_Fi = diff(F(i1), var_poly.x(i1));
-            Div_F = Div_F + Div_Fi;
             Div_Gi = diff(G(i1), var_poly.x(i1));
             Div_G = Div_G + Div_Gi;
         end
-
-        
         Div_G.coefficient(find(abs(Div_G.coefficient) <= trunc_decim)) = 0;
 
         % term2, term4
         if strcmp(data_approx_option.approx, 'gEDMD')
-            if length(c_c) == 1
-                c_c = c_c{1};
+%             if length(c_c) == 1
+%                 c_c = c_c{1};
+%             end
+            if i_input == 2
+                term(2) = c_c{i_input-1}'*(L{i_input}-L{1})*Psi + c_c{i_input-1}'*Psi*Div_G;
+                term(4) = c_bc{i_input-1}'*(L{i_input}-L{1})*Psi + c_bc{i_input-1}'*Psi*Div_G;
+            else
+                term(2) = term(2) + c_c{i_input-1}'*(L{i_input}-L{1})*Psi + c_c{i_input-1}'*Psi*Div_G;
+                term(4) = term(4) + c_bc{i_input-1}'*(L{i_input}-L{1})*Psi + c_bc{i_input-1}'*Psi*Div_G;
             end
-            term(2) = term(2) + c_c'*(L{i_input}-L{1})*Psi + c_c{i_input}'*Psi*Div_G;
-            term(4) = term(4) + c_bc'*(L{i_input}-L{1})*Psi + c_bc{i_input}'*Psi*Div_G;
         else %EDMD
-            term(2) = term(2) + c_c{i_input}'*L{i_input}*Psi + c_c{i_input}'*Psi*Div_G;
-            term(4) = term(4) + c_bc{i_input}'*L{i_input}*Psi + c_bc{i_input}'*Psi*Div_G;
+            if i_input == 2
+                term(2) = c_c{i_input-1}'*L{i_input}*Psi + c_c{i_input-1}'*Psi*Div_G;
+                term(4) = c_bc{i_input-1}'*L{i_input}*Psi + c_bc{i_input-1}'*Psi*Div_G;
+            else
+                term(2) = term(2) + c_c{i_input-1}'*L{i_input}*Psi + c_c{i_input-1}'*Psi*Div_G;
+                term(4) = term(4) + c_bc{i_input-1}'*L{i_input}*Psi + c_bc{i_input-1}'*Psi*Div_G;
+            end
         end
     end
-    % term1
-    term(1) = c_a'*L{1}*Psi + c_a'*Psi*Div_F;
-    % term3
-    term(3) = c_ab'*L{1}*Psi + c_ab'*Psi*Div_F;         
     constraint_poly = (1+Alph).*poly_b*sum(term(1:2)) - Alph.*sum(term(3:4));
     % L1-DATA-DRIVEN
     %     constraint_poly.coefficient(find(abs(constraint_poly.coefficient)<=1e-1)) = 0;
@@ -120,6 +132,14 @@ end
 % constraint_sym = vpa(constraint_sym, truncation_precision);
 
 sos_prog = sosineq(sos_prog, constraint_sym);
+
+%% constraint on initial set X_0
+geo = domain_definition();
+X_0 = geo.poly_X_init;
+alhpa_X0 = option.optimization.alpha_x0;
+constaint_x0_i = constraint_sym-alhpa_X0*X_0(1);
+sos_prog = sosineq(sos_prog, constaint_x0_i);
+
 sos_prog = sosineq(sos_prog, poly_a_sym);
 
 %% solve
@@ -134,7 +154,7 @@ option.params.tol = 1e-15; % tolerance for the stop
 
 [sos_prog, ocp_info] = solve_show_info(sos_prog, option);
 
-%%
+%% operations on the solution
 % get solution: cx, ax.
 disp('----- get solution from the sos program -----')
 cx_sol = [];
@@ -163,7 +183,48 @@ wx_sol = s2p(wx_sol_sym);
 
 bx_sol_sym = sosgetsol(sos_prog, poly_b_sym);
 bx_sol = s2p(bx_sol_sym);
- 
+
+% check the psd for the matrix M in the L2 case
+if strcmp(option.control_penalty_type, 'L2')
+    M_sol = sosgetsol(sos_prog,  M);
+    eig_vals = eig((M_sol + M_sol')/2); 
+    
+    disp('is the solved M positive definite')
+    options_M.solver = 'sedumi'
+    [Q, Z, H] = findsos(M_sol, [])
+end
+
+% evaluate the cost function
+disp('obj_sos_sol')
+obj_sos_sol = sosgetsol(sos_prog, obj_sos)
+disp('base_obj_sos_sol')
+base_obj_sos_sol = sosgetsol(sos_prog,  base_integral_obj)
+constraint_sym_sol = sosgetsol(sos_prog, constraint_sym)
+
+date = sprintf('%s', datestr(now,'mm_dd_HH_MM'));
+data_driven_type = option.data_driven_option.type;
+regularizing_type = option.control_penalty_type;
+file_prefix = ['res/',date, '_', dynamics_option,'_trj_',regularizing_type,'_',data_driven_type,'_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio)];
+name_div_surface = [file_prefix,'_constraintsym_surface_alpha_',num2str(alhpa_X0),'.png'];
+name_h0_surface = [file_prefix,'_h0_surface_alpha_',num2str(alhpa_X0),'.png'];
+
+fig1 = figure();
+plot_sets(geo);
+fsurf(constraint_sym_sol, 'FaceAlpha', 0.3);
+xlim([-4.5, 4.5]);
+ylim([-4.5, 4.5]);
+view(-19,56);
+
+fig2 = figure();
+plot_sets(geo);
+fsurf(constraint_sym_sol/bx_sol_sym, 'FaceAlpha', 0.3);
+xlim([-4.5, 4.5]);
+ylim([-4.5, 4.5]);
+view(-19,56);
+
+saveas(fig1, name_div_surface);
+saveas(fig2, name_h0_surface);
+
  %% data file
  data_driven_type = option.data_driven_option.type;
  input_regularizer = option.control_penalty_type;

@@ -85,6 +85,8 @@ var_sym.x2 = x2;
 % local lqr
 if strcmp(poly_b_type, 'lqr')
     lc_lqr = generate_local_lqr(dynamics_sym, var_sym, dim_m);
+%     poly_b = 0.5*((var_poly.x1+1.5)^2 + (var_poly.x2-2.5)^2) + 0.5*((var_poly.x1-1.5)^2 + (var_poly.x2+3.0)^2);
+%     poly_b_sym = 0.5*((var_sym.x1+1.5)^2 + (var_sym.x2-2.5)^2) + 0.5*((var_sym.x1-1.5)^2 + (var_sym.x2+3.0)^2);
     poly_b = var_poly.x'*lc_lqr.S*var_poly.x;
     poly_b_sym = var_sym.x.'*lc_lqr.S*var_sym.x;
 elseif strcmp(poly_b_type, 'quadratic')

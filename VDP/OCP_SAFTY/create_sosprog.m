@@ -3,7 +3,6 @@ function data_file_name = create_sosprog(option)
 % polynomials a, b, c, q, R, w: if it does not exist, please first run polynomials_definition.m
 load('polynomials_def.mat')
 geometry = domain_definition();
-input_regularizer = option.control_penalty_type;
 %% sos constraints on OCP equivalent matrix SDP
 % add poly_w as decision variables
 sos_prog = sosprogram(var_sym.x);
@@ -18,6 +17,16 @@ end
 
 c_a_sym_decl = p2s(c_a);
 sos_prog = sosdecvar(sos_prog, [c_a_sym_decl(1:Qa)]);
+
+% find sos for q(x)
+options_check_q.solver = 'sedumi';
+disp('----- Is the state cost q(x) positive definite? -----')
+    [Q_sol_q, ~] = findsos(poly_q_sym, [], options_check_q);
+    eig_vals = eig((Q_sol_q + Q_sol_q')/2); 
+    is_psd_sol_q = [sum([sign(eig_vals)==1])==length(Q_sol_q)];
+    if ~is_psd_sol_q
+        keyboard
+    end
 
 %% Base integral
 % monomial integrations
@@ -47,7 +56,7 @@ for li=1:Qa
 end
 obj_sos = transpose(c_a_sym(1:Qa)) * integral_vec_a;
 
-if strcmp(input_regularizer, 'L2')
+if strcmp(option.control_penalty_type, 'L2')
    %% L2 penalty and constraints and objectives on control :w(x), matrix M
     c_w_sym_decl = p2s(c_w);
     sos_prog = sosdecvar(sos_prog, [c_w_sym_decl(1:Qw)]);
@@ -62,34 +71,27 @@ if strcmp(input_regularizer, 'L2')
         M(1,i_c) = poly_c_sym(i_c-1);
         M(i_c,1) = poly_c_sym(i_c-1);
     end
-    M(2:end, 2:end) = R_ocp^-1 .* poly_a_sym; % Should be inv(R) in general cases.
+    M(2:end, 2:end) = inv(R_ocp) .* poly_a_sym; % Should be inv(R) in general cases.
     sos_prog = sosmatrixineq(sos_prog, M, 'Mineq');
-
+    
+    % integration
     integral_vec_w = zeros(Qw, 1);
     for li=1:Qw
             cost_fun2_hdl = matlabFunction(Psi_sym(li) ./ (poly_b_sym.^Alph));
-%             integral_vec_w(li) = integral_circle(cost_fun2_hdl, geometry.X_cen, geometry.r_X, var_sym.x, [geometry.X_0.xmin, geometry.X_0.xmax]) - ...
-%                                                       integral_circle(cost_fun2_hdl, geometry.X_r_cen, geometry.r_xr, var_sym.x, [geometry.X_r_coord.xmin, geometry.X_r_coord.xmax]);      
-
     % circle
 %             integral_vec_w(li) = integral2(cost_fun2_hdl, geometry.X_0.xmin, geometry.X_r_coord.xmin, lower_bd_X, upper_bd_X) + ...
 %                                                      integral2(cost_fun2_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, lower_bd_X, lower_bd_Xr) + ...
 %                                                      integral2(cost_fun2_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, upper_bd_Xr, upper_bd_X) + ...
 %                                                      integral2(cost_fun2_hdl, geometry.X_r_coord.xmax, geometry.X_0.xmax, lower_bd_X, upper_bd_X);
 
-    % cube excluding Xr
-            integral_vec_w(li) = integral2(cost_fun2_hdl, geometry.X_0.xmin, geometry.X_r_coord.xmin, geometry.X_0.ymin, geometry.X_0.ymax) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, geometry.X_0.ymin, geometry.X_r_coord.ymin) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, geometry.X_r_coord.ymax, geometry.X_0.ymax) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_r_coord.xmax, geometry.X_0.xmax,  geometry.X_0.ymin, geometry.X_0.ymax);
-    % cube excluding a small set X_excld                                         
-    integral_vec_w(li) = integral2(cost_fun2_hdl, geometry.X_0.xmin, geometry.X_excld.xmin, geometry.X_0.ymin, geometry.X_0.ymax) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_excld.xmin, geometry.X_excld.xmax, geometry.X_0.ymin, geometry.X_excld.ymin) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_excld.xmin, geometry.X_excld.xmax, geometry.X_excld.ymax, geometry.X_0.ymax) + ...
-                                                 integral2(cost_fun2_hdl, geometry.X_excld.xmax, geometry.X_0.xmax,  geometry.X_0.ymin, geometry.X_0.ymax);
+    % circle geometry.X_excld: a cube
+    integral_vec_w(li) = integral2(cost_fun2_hdl, geometry.X_0.xmin, geometry.X_excld.xmin, lower_bd_X, upper_bd_X) + ...
+                                             integral2(cost_fun2_hdl, geometry.X_excld.xmin, geometry.X_excld.xmax, lower_bd_X, geometry.X_excld.ymin) + ...
+                                             integral2(cost_fun2_hdl, geometry.X_excld.xmin, geometry.X_excld.xmax, geometry.X_excld.ymax, upper_bd_X) + ...
+                                             integral2(cost_fun2_hdl, geometry.X_excld.xmax, geometry.X_0.xmax, lower_bd_X, upper_bd_X);
     end
     obj_sos = obj_sos + transpose(c_w_sym(1:Qw)) * integral_vec_w;
-elseif strcmp(input_regularizer, 'L1')
+elseif strcmp(option.control_penalty_type, 'L1')
    %% l1-norm penalty on c(x)
     % vdp and 2d linear
     % beta = 1e3;

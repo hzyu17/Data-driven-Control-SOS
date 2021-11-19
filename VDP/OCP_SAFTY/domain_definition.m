@@ -32,25 +32,25 @@ r_xr = 0.4;
 % X_u_cen(2, :) = [-0.5, -1.5];
 
 %% VDP L1 DATADRIVEN
-% X_init_cen(1, :) = [-1.5 2.5];
-% X_init_cen(2, :) = [1.5 -3.0];
-% 
-% X_u_cen(1, :) = [0.15, 1.0];
-% X_u_cen(2, :) = [-0.3, -1.2];
-
-%% VDP L2  DATADRIVEN
 X_init_cen(1, :) = [-1.5 2.5];
 X_init_cen(2, :) = [1.5 -3.0];
 
 X_u_cen(1, :) = [0.15, 1.0];
 X_u_cen(2, :) = [-0.3, -1.2];
 
-%% 2d minus cubic system
-X_init_cen(1, :) = [-1.5 2.5];
-X_init_cen(2, :) = [1.5 -3.0];
+%% VDP L2  DATADRIVEN
+% X_init_cen(1, :) = [-1.5 2.5];
+% X_init_cen(2, :) = [1.5 -3.0];
+% 
+% X_u_cen(1, :) = [0.15, 1.0];
+% X_u_cen(2, :) = [-0.3, -1.2];
 
-X_u_cen(1, :) = [-0.5, 1.0];
-X_u_cen(2, :) = [0.6, -1.0];
+%% 2d minus cubic system
+% X_init_cen(1, :) = [-1.5 2.5];
+% X_init_cen(2, :) = [1.5 -3.0];
+% 
+% X_u_cen(1, :) = [-0.5, 1.0];
+% X_u_cen(2, :) = [0.6, -1.0];
 
 %% double integrator
 % X_init_cen = [-1.2, 1.2];

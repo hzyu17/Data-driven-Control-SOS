@@ -23,7 +23,7 @@ integral_vec_a_r = zeros(Qa, 1);
 % unsafe sets and initial sets. Done for the multiple unsafe set case.
 % 06/30: moved the whole integration part in the program construction part.
 % Done with the multiple unsafe sets case.
-
+base_integral_obj = obj_sos;
 if lambda > 0
     for i_xu = 1: num_xu % multiple unsafe sets
         X_u_coord_i = geometry.X_u_coord(i_xu);
@@ -39,7 +39,7 @@ if lambda > 0
 %                 integral_vec_a_r(li) = integral_vec_a_r(li) + integral2(cost_fun2_hdl, X_u_coord_i.xmin, X_u_coord_i.xmax, X_u_coord_i.ymin, X_u_coord_i.ymax);
          end
     end
-    obj_sos = obj_sos + transpose(c_a_sym(1:Qa)) * integral_vec_a_r
+    obj_sos = obj_sos + transpose(c_a_sym(1:Qa)) * integral_vec_a_r;
 end
 
  % rescale objective function to provide a better numerical condition
@@ -132,6 +132,14 @@ end
 % constraint_sym = vpa(constraint_sym, truncation_precision);
 
 sos_prog = sosineq(sos_prog, constraint_sym);
+
+%% constraint on initial set X_0
+geo = domain_definition();
+X_0 = geo.poly_X_init;
+alhpa_X0 = option.optimization.alpha_x0;
+constaint_x0_i = constraint_sym-alhpa_X0*X_0(1);
+sos_prog = sosineq(sos_prog, constaint_x0_i);
+
 sos_prog = sosineq(sos_prog, poly_a_sym);
 
 %% solve
@@ -146,7 +154,9 @@ option.params.tol = 1e-15; % tolerance for the stop
 
 [sos_prog, ocp_info] = solve_show_info(sos_prog, option);
 
-%%
+%% operations on the solution
+ options_solutions.solver = 'sedumi';
+ 
 % get solution: cx, ax.
 disp('----- get solution from the sos program -----')
 cx_sol = [];
@@ -161,21 +171,108 @@ for i_c = 1:dim_m
 end
 ax_sol_sym = sosgetsol(sos_prog, poly_a_sym);
 % coeff_ax = get_coefficients(ax_sol_sym);
-
 % vdp
 % ax_sol_sym = clean_polynomial(ax_sol_sym, trunc_decim);
 % ax_sol_sym = vpa(ax_sol_sym, truncation_precision);
 ax_sol = s2p(ax_sol_sym);
 
-wx_sol_sym = sosgetsol(sos_prog, poly_w_sym);
-% coeff_wx = get_coefficients(wx_sol_sym);
-% wx_sol_sym = p2s(clean_polynomial(s2p(wx_sol_sym), trunc_decim));
-% wx_sol_sym = vpa(wx_sol_sym, truncation_precision)
-wx_sol = s2p(wx_sol_sym);
+% find sos for a(x)
+disp('----- Is the solved w(x) positive definite? -----')
+[Q_sol_a, ~] = findsos(ax_sol_sym, [], options_solutions);
+eig_vals = eig((Q_sol_a + Q_sol_a')/2); 
+is_psd_sol_a = [sum([sign(eig_vals)==1])==length(Q_sol_a)]
+if ~is_psd_sol_a
+    keyboard
+end
 
-bx_sol_sym = sosgetsol(sos_prog, poly_b_sym);
-bx_sol = s2p(bx_sol_sym);
- 
+% poly_b_sym = sosgetsol(sos_prog, poly_b_sym);
+bx_sol = s2p(poly_b_sym);
+
+%% L2 case
+% check the psd for the matrix M and w(x)
+if strcmp(option.control_penalty_type, 'L2')
+    % find sos for M
+    M_sol = sosgetsol(sos_prog,  M);    
+    disp('----- Is the solved M positive definite? -----')
+  
+    [Q_sol_M, ~, ~] = findsos(M_sol, [], options_solutions);
+    eig_vals = eig((Q_sol_M + Q_sol_M')/2); 
+    is_pd_sol_M = [sum([sign(eig_vals)==1])==length(Q_sol_M)]
+    if ~is_pd_sol_M
+        keyboard
+    end
+    
+    % find sos for w(x)
+    wx_sol_sym = sosgetsol(sos_prog, poly_w_sym);
+    wx_sol = s2p(wx_sol_sym);
+    
+    disp('----- Is the solved w(x) positive definite? -----')
+    [Q_sol_w, ~] = findsos(wx_sol_sym, [], options_solutions);
+    eig_vals = eig((Q_sol_w + Q_sol_w')/2); 
+    is_pd_sol_w = [sum([sign(eig_vals)==1])==length(Q_sol_w)]
+    if ~is_pd_sol_w
+        keyboard
+    end
+  
+    % evaluate the solved objective function
+    %% Base integral
+    % monomial integrations
+    geometry = domain_definition();
+    lower_bd_X = matlabFunction(geometry.X_cen(2) - sqrt(geometry.r_X^2 - (var_sym.x(1) - geometry.X_cen(1)).^2));
+    upper_bd_X = matlabFunction(geometry.X_cen(2) + sqrt(geometry.r_X^2 - (var_sym.x(1) - geometry.X_cen(1)).^2));
+
+    lower_bd_Xr = matlabFunction(geometry.X_r_cen(2) - sqrt(geometry.r_xr^2 - (var_sym.x(1) - geometry.X_r_cen(1)).^2));
+    upper_bd_Xr = matlabFunction(geometry.X_r_cen(2) + sqrt(geometry.r_xr^2 - (var_sym.x(1) - geometry.X_r_cen(1)).^2));
+
+
+    eval_cost_fun_hdl = matlabFunction(ax_sol_sym.* poly_q_sym ./ (poly_b_sym.^Alph) + transpose(cx_sol_sym)* R_ocp * cx_sol_sym /  ax_sol_sym);
+    eval_cost_fun_hdl1 = matlabFunction(ax_sol_sym.* poly_q_sym ./ (poly_b_sym.^Alph) + wx_sol_sym);
+% circle
+    disp('L2 cost function recalculated')
+    eval_cost_fun = integral2(eval_cost_fun_hdl, geometry.X_0.xmin, geometry.X_r_coord.xmin, lower_bd_X, upper_bd_X) + ...
+                                             integral2(eval_cost_fun_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, lower_bd_X, lower_bd_Xr) + ...
+                                             integral2(eval_cost_fun_hdl, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, upper_bd_Xr, upper_bd_X) + ...
+                                             integral2(eval_cost_fun_hdl, geometry.X_r_coord.xmax, geometry.X_0.xmax, lower_bd_X, upper_bd_X)
+                                         
+    disp('L2 cost function recalculated using wx')
+    eval_cost_fun = integral2(eval_cost_fun_hdl1, geometry.X_0.xmin, geometry.X_r_coord.xmin, lower_bd_X, upper_bd_X) + ...
+                                             integral2(eval_cost_fun_hdl1, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, lower_bd_X, lower_bd_Xr) + ...
+                                             integral2(eval_cost_fun_hdl1, geometry.X_r_coord.xmin, geometry.X_r_coord.xmax, upper_bd_Xr, upper_bd_X) + ...
+                                             integral2(eval_cost_fun_hdl1, geometry.X_r_coord.xmax, geometry.X_0.xmax, lower_bd_X, upper_bd_X)
+                                         
+end
+
+% evaluate the cost function
+disp('obj_sos_sol')
+obj_sos_sol = sosgetsol(sos_prog, obj_sos)
+disp('base_obj_sos_sol')
+base_obj_sos_sol = sosgetsol(sos_prog,  base_integral_obj)
+constraint_sym_sol = sosgetsol(sos_prog, constraint_sym)
+
+date = sprintf('%s', datestr(now,'mm_dd_HH_MM'));
+data_driven_type = option.data_driven_option.type;
+regularizing_type = option.control_penalty_type;
+file_prefix = ['res/',date, '_', dynamics_option,'_trj_',regularizing_type,'_',data_driven_type,'_','lamb_',num2str(lambda),'ocp_feas_',num2str(ocp_info.feasratio)];
+name_div_surface = [file_prefix,'_constraintsym_surface_alpha_',num2str(alhpa_X0),'.png'];
+name_h0_surface = [file_prefix,'_h0_surface_alpha_',num2str(alhpa_X0),'.png'];
+
+fig1 = figure();
+plot_sets(geo);
+fsurf(constraint_sym_sol, 'FaceAlpha', 0.3);
+xlim([-4.5, 4.5]);
+ylim([-4.5, 4.5]);
+view(-19,56);
+
+fig2 = figure();
+plot_sets(geo);
+fsurf(constraint_sym_sol/poly_b_sym, 'FaceAlpha', 0.3);
+xlim([-4.5, 4.5]);
+ylim([-4.5, 4.5]);
+view(-19,56);
+
+saveas(fig1, name_div_surface);
+saveas(fig2, name_h0_surface);
+
  %% data file
  data_driven_type = option.data_driven_option.type;
  input_regularizer = option.control_penalty_type;

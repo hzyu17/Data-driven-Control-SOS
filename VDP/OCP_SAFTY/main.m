@@ -62,7 +62,7 @@ close all
 clc
 
 %%
-experiment = 'L1-data driven-minus_cubic'; % L1-data driven, L2-data driven, L1-model, L2-model, L1-data driven linear2d, L1-data driven-minus_cubic
+experiment = 'L2-data driven vdp'; % L1-data driven, L2-data driven, L1-model, L2-model, L1-data driven linear2d, L1-data driven-minus_cubic
 %% configurations 
 if strcmp(experiment, 'L1-data driven vdp')
     %% configuration for L1-data driven
@@ -76,6 +76,7 @@ if strcmp(experiment, 'L1-data driven vdp')
     option.degrees.Alph = 4;
     option.degrees.dim_m=1;
     option.degrees.deg_q = 4;
+    option.optimization.alpha_x0 = 0;
     option.poly_b_type = 'lqr';
     option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
@@ -93,6 +94,7 @@ elseif strcmp(experiment, 'L2-data driven vdp')
     option.degrees.Alph = 4;
     option.degrees.dim_m=1;
     option.degrees.deg_q = 4;
+    option.optimization.alpha_x0 = 0;
     option.poly_b_type = 'lqr';
     option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
@@ -108,6 +110,7 @@ elseif strcmp(experiment, 'L1-data driven-minus_cubic')
     option.degrees.deg_c = [6 6];
     option.degrees.Alph = 4;
     option.degrees.deg_q = 4;
+    option.optimization.alpha_x0 = 0;
     option.poly_b_type = 'lqr';
     option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
@@ -123,6 +126,7 @@ elseif strcmp(experiment, 'L1-data driven linear2d')
     option.degrees.deg_c = [6 6];
     option.degrees.Alph = 4;
     option.degrees.deg_q = 4;
+    option.optimization.alpha_x0 = 0;
     option.poly_b_type = 'lqr';
     option.solution_truncation = 1e-0;
     option.variable_trunc = 1e-9;
@@ -143,10 +147,15 @@ end
 % for lamda = 1e5 % corresponding to van der pol dynamics
 % lambda = 40; % 2-dim integrator
 % for lambda = [0, 100, 200, 300, 400, 1000] % L1 vdp
-% for lambda = [100 300 500 700 800 900 1000 5000 10000] % L1 vdp data-driven
+% for lambda = [0 300 1000 10000] % L1 vdp data-driven
 % for lambda = [0 100 1000 1e4 1e5 1e6 1e7 5e7] % L2 vdp data-driven
+for lambda = [0 1e4 1e6 5e7] % L2 vdp data-driven
+
+% for lambda = [0]
+disp('----- lambda -----')
+lambda
 sos_prog_file = create_sosprog(option);
-for lambda = [100 1000 1e4] % L2 vdp data-driven
+% for lambda = [100 1000 1e4] % L2 vdp data-driven
     ocp_data_file_name = solve_optimal_control(lambda, sos_prog_file, gEDMD_filename, option);
 
     % plotting ocp results
@@ -162,6 +171,7 @@ end
 % 'experiments/07_02_23_39_optimal_control_results_SOS_Rational_lbd_50000.mat';
 
 % safety_prog_file = create_safety_program();
+
 %%
 safety_prog_file = '';
 data_file_name = solve_safety_verification(ocp_data_file_name, safety_prog_file);

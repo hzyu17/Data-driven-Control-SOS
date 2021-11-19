@@ -17,7 +17,7 @@ xinits = plotting_elements.xints;
 ycont = plotting_elements.trajectory.ycont;
 ax_over_bx = plotting_elements.surfaces.ax_over_bx;
 div_ocp = plotting_elements.surfaces.div_ocp;
-
+h_0 = plotting_elements.surfaces.h_0;
 % figure title
 ttl = figure_title(dynamics_option, lambda, ocp_info, []);
 
@@ -86,6 +86,7 @@ ylim([-1.0, 3.2])
 
 %% fig 2: div(rho (f+gu)) surface plot for optimal control
 fig2 = figure('visible','off');
+% fig2 = figure();
 plot_sets(geometry);
 % title(ttl, 'Interpreter', 'none');
 
@@ -101,8 +102,22 @@ xlim([-4.5, 4.5])
 ylim([-4.5, 4.5])
 view(-19,56)
 
-%% fig 3: rho(f+gu) surface for optimal control
+%% fig 3: h_0 surface for optimal control
 fig3 = figure('visible','off');
+% fig3 = figure();
+plot_sets(geometry);
+title(ttl, 'Interpreter', 'none');
+
+% surface plotting
+hold on
+fsurf(h_0);
+
+xlim([-4.5, 4.5])
+ylim([-4.5, 4.5])
+view(-19,56)
+
+%% fig 4:a/b surface for optimal control
+fig4 = figure('visible','off');
 plot_sets(geometry);
 title(ttl, 'Interpreter', 'none');
 
